@@ -1,5 +1,4 @@
 var versionParse = require('./lib/utils').versionParse;
-var incValue = require('./lib/utils').incValue;
 
 var COMPARATORS = ['>=', '<=', '>', '<', '=', '~', '^'];
 

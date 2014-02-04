@@ -9,7 +9,11 @@ A node library to parse simple [node-semver](https://github.com/isaacs/node-semv
 var mozVersion = require('mozilla-toolkit-versioning');
 var parsed = mozVersion.parse('>=3.6 <= 30.0');
 parsed.min; // '3.6'
-parsed.max; // '30.0a'
+parsed.max; // '30.0'
+
+var parsed = mozVersion.parse('>26');
+parsed.min; // '26.1'
+parsed.max; // undefined
 ```
 
 ## Ranges
