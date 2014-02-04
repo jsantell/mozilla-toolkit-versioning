@@ -15,10 +15,10 @@ parsed.max; // '30.0a'
 ## Ranges
 
 * `1.2.3` - A specific version
-* `&gt;1.2.3` - Greater than a specific version
-* `&lt;1.2.3` - Less than a specific version (does not include pre-release)
-* `&gt;=1.2.3` - Greater than or equal to a specific version (does not include pre-release)
-* `&lt;=1.2.3` - Less than a specific version (DOES include pre-release)
-* `&gt;=1.2.3 &lt;=2.3.4` - Between or equal to the range
-* `1.2.3 - 2.3.4` := `&gt;=1.2.3 &lt;=2.3.4`
+* `>1.2.3` - Greater than a specific version
+* `<1.2.3` - Less than a specific version (does not include pre-release)
+* `>=1.2.3` - Greater than or equal to a specific version (does not include pre-release)
+* `<=1.2.3` - Less than a specific version (DOES include pre-release)
+* `>=1.2.3 <=2.3.4` - Between or equal to the range
+* `1.2.3 - 2.3.4` := `>=1.2.3 <=2.3.4`
 
