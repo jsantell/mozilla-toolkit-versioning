@@ -16,6 +16,7 @@ describe('parse(version) single value', function () {
   testParse('<=1.2.3', undefined, '1.2.3');
   testParse('>1.2.3', '1.2.3.1', undefined);
   testParse('<1.2.3', undefined, '1.2.3.-1');
+  testParse('*', undefined, undefined);
 });
 
 describe('parse(version) range', function () {
@@ -56,6 +57,7 @@ function testInc (string, expected) {
     expect(compare(string, expected)).to.be.equal(-1);
   });
 }
+
 function patternMatch (pattern, lessThan, greaterThan) {
   lessThan = [].concat(lessThan);
   greaterThan = [].concat(greaterThan);

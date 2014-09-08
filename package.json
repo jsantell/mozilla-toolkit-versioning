@@ -1,7 +1,7 @@
 {
   "name": "mozilla-toolkit-versioning",
-  "version": "0.0.1",
-  "description": "Tool for use intepreting Mozilla Toolkit Version Format",
+  "version": "0.0.2",
+  "description": "Parser for Mozilla's toolkit version format",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha --reporter spec --ui bdd"
@@ -12,12 +12,10 @@
   },
   "author": "Jordan Santell",
   "license": "MIT",
-  "dependencies": {
-
-  },
+  "dependencies": {},
   "devDependencies": {
-    "mocha": "*",
-    "chai": "*",
-    "mozilla-version-comparator": "*"
+    "mocha": "^1.21.4",
+    "chai": "^1.9.1",
+    "mozilla-version-comparator": "^1.0.2"
   }
 }

@@ -8,6 +8,11 @@ exports.parse = function (input) {
   if (!input)
     throw new Error('`parse` argument must be a populated string.');
 
+  // Handle the "*" case
+  if (input === "*") {
+    return { min: undefined, max: undefined };
+  }
+
   var inputs = input.split(' ');
   var min;
   var max;
