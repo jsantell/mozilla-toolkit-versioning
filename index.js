@@ -25,7 +25,7 @@ exports.parse = function (input) {
   }
 
   // Handle the '*' case
-  // note: Maybe return value { min: undefined, max: '*' } should be better?
+  // note: Maybe return { min: undefined, max: '*' } should be better?
   if (input === '*') {
     return { min: undefined, max: undefined };
   }
@@ -34,7 +34,7 @@ exports.parse = function (input) {
 
   // 1.2.3 - 2.3.4
   if (inputs.length === 3) {
-    // note: If '>=1.2.3 - <=2.3.4' is acceptable (version string with COMPARATORs),
+    // note: If '>=1.2.3 - <=2.3.4' is acceptable (with COMPARATOR),
     // then expression for version string should be
     // new RegExp(`${VERSION_STRING}`)
     var exp = new RegExp(`^${VERSION_FORMAT}$`);
@@ -50,39 +50,30 @@ exports.parse = function (input) {
     for (var i = 0, l = inputs.length; i < l; i++) {
       var str = (new RegExp(`^${VERSION_STRING}$`)).exec(inputs[i]);
       if (str) {
-        if (str[1]) {
-          switch (str[1]) {
-            case '<':
-              max = decrement(str[2]);
-              break;
-            case '<=':
-              max = str[2];
-              break;
-            case '>':
-              min = increment(str[2]);
-              break;
-            case '>=':
-              min = str[2];
-              break;
-            default:
-              if (i === 0) {
-                min = str[2];
-              }
-              else {
-                max = str[2];
-              }
-          }
-        }
-        else {
-          if (i === 0) {
-            min = max = str[2];
-            if (l === 1) {
-              break;
-            }
-          }
-          else {
+        switch (str[1]) {
+          case '>':
+            min = increment(str[2]);
+            break;
+          case '>=':
+            min = str[2];
+            break;
+          case '<':
+            max = decrement(str[2]);
+            break;
+          case '<=':
             max = str[2];
-          }
+            break;
+          default:
+            // !COMPARATOR
+            if (i === 0) {
+              min = max = str[2];
+              if (l === 1) {
+                break;
+              }
+            }
+            else {
+              max = str[2];
+            }
         }
       }
       else {
