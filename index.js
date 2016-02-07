@@ -94,7 +94,6 @@ exports.parse = function (input) {
  * @return {String}
  */
 function decrement (vString) {
-  // note: Always add '.' and return vString + '.-1'; looks better.
   return vString + (vString.charAt(vString.length - 1) === '.' ? '' : '.') + '-1';
 }
 exports.decrement = decrement;
@@ -103,12 +102,31 @@ exports.decrement = decrement;
  * Takes a version string ('1.2.3') and returns a version string
  * that'll parse as greater than the input string by the smallest margin
  * possible ('1.2.3.1').
+ * listed as number-A, string-B, number-C, string-D in 
+ * Mozilla's Toolkit Format.
+ * https://developer.mozilla.org/en-US/docs/Toolkit_version_format
  *
  * @param {String} vString
  * @return {String}
  */
 function increment (vString) {
-  // note: Always add '.' and return vString + '.1'; looks better.
-  return vString + (vString.charAt(vString.length - 1) === '.' ? '' : '.') + '1';
+  var match = /^(-?[\d]+)?([!-\-\/:-~]+)?(-?[\d]+)?([!-\-\/:-~]+)?$/.exec(vString);
+  var a = match[1];
+  var b = match[2];
+  var c = match[3];
+  var d = match[4];
+  var lastPos = vString.length - 1;
+  var lastChar = vString.charAt(lastPos);
+
+  if (!b) {
+    return vString + (lastChar === '.' ? '' : '.') + '1';
+  }
+  if (!c) {
+    return vString + '1';
+  }
+  if (!d) {
+    return vString.substr(0, lastPos) + (++lastChar);
+  }
+  return vString.substr(0, lastPos) + String.fromCharCode(lastChar.charCodeAt(0) + 1);
 }
 exports.increment = increment;
