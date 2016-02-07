@@ -7,7 +7,7 @@ exports.parse = function (input) {
 
   // Expression to match Mozilla's Toolkit Format.
   // https://developer.mozilla.org/en-US/docs/Toolkit_version_format
-  var VERSION_PART = '(?:(?:-?[\d]+)?(?:[!-\-\/:-~]+)?){2}';
+  var VERSION_PART = '(?:(?:-?[\\d]+)?(?:[!-\\-\\/:-~]+)?){2}';
   var VERSION_FORMAT = '(?:' + VERSION_PART + ')?(?:\.(?:' + VERSION_PART + ')?)*';
   var COMPARATOR = '[><]=?';
   var VERSION_STRING = '(' + COMPARATOR + ')?(' + VERSION_FORMAT + ')';
@@ -110,8 +110,8 @@ exports.decrement = decrement;
  * @return {String}
  */
 function increment (vString) {
-  var VERSION_PART_CAPTURE = '(-?[\d]+)?([!-\-\/:-~]+)?(-?[\d]+)?([!-\-\/:-~]+)?';
-  var match = (new RegExp('\.?' + VERSION_PART_CAPTURE + '\.?$')).exec(vString);
+  var VERSION_PART_CAPTURE = '(-?[\\d]+)?([!-\\-\\/:-~]+)?(-?[\\d]+)?([!-\\-\\/:-~]+)?';
+  var match = (new RegExp('\\.?' + VERSION_PART_CAPTURE + '\\.?$')).exec(vString);
   var a = match[1];
   var b = match[2];
   var c = match[3];
