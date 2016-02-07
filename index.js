@@ -8,9 +8,9 @@ exports.parse = function (input) {
   // Expression to match Mozilla's Toolkit Format.
   // https://developer.mozilla.org/en-US/docs/Toolkit_version_format
   var VERSION_PART = '(?:(?:-?[\d]+)?(?:[!-\-\/:-~]+)?){2}';
-  var VERSION_FORMAT = `(?:${VERSION_PART})?(?:\.(?:${VERSION_PART})?)*`;
+  var VERSION_FORMAT = '(?:' + VERSION_PART + ')?(?:\.(?:' + VERSION_PART + ')?)*';
   var COMPARATOR = '[><]=?';
-  var VERSION_STRING = `(${COMPARATOR})?(${VERSION_FORMAT})`;
+  var VERSION_STRING = '(' + COMPARATOR + ')?(' + VERSION_FORMAT + ')';
 
   input = input || '';
   input = input.trim();
@@ -18,7 +18,7 @@ exports.parse = function (input) {
   var inputs = input.split(/\s+/);
 
   if (!input ||
-      !(new RegExp(`${VERSION_STRING}`)).test(input) ||
+      !(new RegExp(VERSION_STRING)).test(input) ||
       inputs.length < 1 ||
       inputs.length > 3) {
     throw new Error(ERROR_MESSAGE);
@@ -37,7 +37,7 @@ exports.parse = function (input) {
     // note: If '>=1.2.3 - <=2.3.4' is acceptable (with COMPARATOR),
     // then expression for version string should be
     // new RegExp(`${VERSION_STRING}`)
-    var exp = new RegExp(`^${VERSION_FORMAT}$`);
+    var exp = new RegExp('^' + VERSION_FORMAT + '$');
     if (inputs[1] === '-' && exp.test(inputs[0]) && exp.test(inputs[2])) {
       return { min: inputs[0], max: inputs[2] };
     }
@@ -47,7 +47,7 @@ exports.parse = function (input) {
   }
   else {
     // inputs.length will be 1 or 2
-    for (var exp = new RegExp(`^${VERSION_STRING}$`),
+    for (var exp = new RegExp('^' + VERSION_STRING + '$'),
              i = 0, l = inputs.length; i < l; i++) {
       var str = exp.exec(inputs[i]);
       if (str) {
@@ -94,7 +94,7 @@ exports.parse = function (input) {
  * @return {String}
  */
 function decrement (vString) {
-  // note: Always add '.' and return `${vString}.-1`; looks better.
+  // note: Always add '.' and return vString + '.-1'; looks better.
   return vString + (vString.charAt(vString.length - 1) === '.' ? '' : '.') + '-1';
 }
 exports.decrement = decrement;
@@ -108,7 +108,7 @@ exports.decrement = decrement;
  * @return {String}
  */
 function increment (vString) {
-  // note: Always add '.' and return `${vString}.1`; looks better.
+  // note: Always add '.' and return vString + '.1'; looks better.
   return vString + (vString.charAt(vString.length - 1) === '.' ? '' : '.') + '1';
 }
 exports.increment = increment;
