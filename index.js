@@ -47,8 +47,9 @@ exports.parse = function (input) {
   }
   else {
     // inputs.length will be 1 or 2
-    for (var i = 0, l = inputs.length; i < l; i++) {
-      var str = (new RegExp(`^${VERSION_STRING}$`)).exec(inputs[i]);
+    for (var exp = new RegExp(`^${VERSION_STRING}$`),
+             i = 0, l = inputs.length; i < l; i++) {
+      var str = exp.exec(inputs[i]);
       if (str) {
         switch (str[1]) {
           case '>':
