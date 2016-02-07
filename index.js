@@ -110,7 +110,7 @@ exports.decrement = decrement;
  * @return {String}
  */
 function increment (vString) {
-  var match = /^(-?[\d]+)?([!-\-\/:-~]+)?(-?[\d]+)?([!-\-\/:-~]+)?$/.exec(vString);
+  var match = /\.?(-?[\d]+)?([!-\-\/:-~]+)?(-?[\d]+)?([!-\-\/:-~]+)?\.?$/.exec(vString);
   var a = match[1];
   var b = match[2];
   var c = match[3];
@@ -122,7 +122,7 @@ function increment (vString) {
     return vString + (lastChar === '.' ? '' : '.') + '1';
   }
   if (!c) {
-    return vString + '1';
+    return vString + (lastChar === '*' ? '.' : '') + '1';
   }
   if (!d) {
     return vString.substr(0, lastPos) + (++lastChar);
