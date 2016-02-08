@@ -12,9 +12,7 @@
   },
   "author": "Jordan Santell",
   "license": "MPL 2.0",
-  "dependencies": {
-    "mozilla-version-comparator": "^1.0.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "mocha": "^1.21.4",
     "chai": "^1.9.1",
