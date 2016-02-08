@@ -1,7 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-var compareVersions = require('mozilla-version-comparator');
 
 exports.parse = function (input) {
   var ERROR_MESSAGE = '`parse` argument must be a populated string.';
@@ -26,47 +25,30 @@ exports.parse = function (input) {
   }
 
   // Handle the '*' case
-  // NOTE: Maybe return { min: undefined, max: '*' } should be better?
+  // note: Maybe return { min: undefined, max: '*' } should be better?
   if (input === '*') {
     return { min: undefined, max: undefined };
   }
 
   var min, max;
-  var exp = new RegExp('^' + VERSION_STRING + '$');
 
   // 1.2.3 - 2.3.4
   if (inputs.length === 3) {
-    // NOTE: What is expected in '2.3.4 - 1.2.3' case? (L > R)
-    //       `if (L > R) then (min = R, max = L)`? (current behavior in this patch)
-    // NOTE: Is '>=1.2.3 - <=2.3.4' acceptable? (with COMPARATOR)
-    // NOTE: Is '>=1.2.3 || <=2.3.4' acceptable? (with `||`, maybe `&&` too)
-    //       What will be the expected behavior for them?
-    //       e.g.) L && R : equals to `parse('L R')`?
-    //             L || R : if L is valid `parse(L)`, else `parse(R)`?
-    var sep = inputs[1];
-    var verL = inputs[0];
-    var verR = inputs[2];
-    if (sep === '-' &&
-        !/^[><]/.test(verL) && exp.test(verL) &&
-        !/^[><]/.test(verR) && exp.test(verR)) {
-      var compare = (versionCompare(verL, verR) + '');
-      if (compare === '1') {
-        min = verR;
-        max = verL;
-      }
-      else {
-        min = verL;
-        max = verR;
-      }
+    // note: If '>=1.2.3 - <=2.3.4' is acceptable (with COMPARATOR),
+    // then expression for version string should be
+    // new RegExp(`${VERSION_STRING}`)
+    var exp = new RegExp('^' + VERSION_FORMAT + '$');
+    if (inputs[1] === '-' && exp.test(inputs[0]) && exp.test(inputs[2])) {
+      return { min: inputs[0], max: inputs[2] };
     }
     else {
-      // with COMPARATOR, using `||` etc.
       throw new Error(ERROR_MESSAGE);
     }
   }
   else {
     // inputs.length will be 1 or 2
-    for (var i = 0, l = inputs.length; i < l; i++) {
+    for (var exp = new RegExp('^' + VERSION_STRING + '$'),
+             i = 0, l = inputs.length; i < l; i++) {
       var str = exp.exec(inputs[i]);
       if (str) {
         switch (str[1]) {
