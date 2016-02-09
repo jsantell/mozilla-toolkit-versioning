@@ -13,7 +13,7 @@ var VERSION_STRING = '(' + COMPARATOR + ')?(' + VERSION_FORMAT + ')';
 var ERROR_MESSAGE = '`parse` argument must be a populated string.';
 
 exports.parse = function (input) {
-  if (!input || !/^string$/i.test(typeof input)) {
+  if (!input || !(typeof input === 'string' || input instanceof String)) {
     throw new Error(ERROR_MESSAGE);
   }
   input = input.trim();
