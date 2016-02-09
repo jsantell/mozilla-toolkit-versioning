@@ -3,25 +3,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 var compareVersions = require('mozilla-version-comparator');
 
+// Expression to match Mozilla's Toolkit Format.
+// https://developer.mozilla.org/en-US/docs/Toolkit_version_format
+var VERSION_PART = '(?:(?:-?[\\d]+)?(?:[!-\\-\\/:-~]+)?){2}';
+var VERSION_PART_CAPTURE = '(-?[\\d]+)?([!-\\-\\/:-~]+)?(-?[\\d]+)?([!-\\-\\/:-~]+)?';
+var VERSION_FORMAT = '(?:' + VERSION_PART + ')?(?:\.(?:' + VERSION_PART + ')?)*';
+var COMPARATOR = '[><]=?';
+var VERSION_STRING = '(' + COMPARATOR + ')?(' + VERSION_FORMAT + ')';
+var ERROR_MESSAGE = '`parse` argument must be a populated string.';
+
 exports.parse = function (input) {
-  var ERROR_MESSAGE = '`parse` argument must be a populated string.';
-
-  // Expression to match Mozilla's Toolkit Format.
-  // https://developer.mozilla.org/en-US/docs/Toolkit_version_format
-  var VERSION_PART = '(?:(?:-?[\\d]+)?(?:[!-\\-\\/:-~]+)?){2}';
-  var VERSION_FORMAT = '(?:' + VERSION_PART + ')?(?:\.(?:' + VERSION_PART + ')?)*';
-  var COMPARATOR = '[><]=?';
-  var VERSION_STRING = '(' + COMPARATOR + ')?(' + VERSION_FORMAT + ')';
-
-  input = input || '';
+  if (!input || !/^string$/i.test(typeof input)) {
+    throw new Error(ERROR_MESSAGE);
+  }
   input = input.trim();
 
   var inputs = input.split(/\s+/);
-
-  if (!input ||
-      !(new RegExp(VERSION_STRING)).test(input) ||
-      inputs.length < 1 ||
-      inputs.length > 3) {
+  if (!(new RegExp(VERSION_STRING)).test(input) ||
+      inputs.length < 1 || inputs.length > 3) {
     throw new Error(ERROR_MESSAGE);
   }
 
@@ -31,7 +30,7 @@ exports.parse = function (input) {
     return { min: undefined, max: undefined };
   }
 
-  var min, max;
+  var min, max, parsed;
   var exp = new RegExp('^' + VERSION_STRING + '$');
 
   // 1.2.3 - 2.3.4
@@ -40,65 +39,41 @@ exports.parse = function (input) {
     //       `if (L > R) then (min = R, max = L)`? (current behavior in this patch)
     // NOTE: Is '>=1.2.3 - <=2.3.4' acceptable? (with COMPARATOR)
     // NOTE: Is '>=1.2.3 || <=2.3.4' acceptable? (with `||`, maybe `&&` too)
-    //       What will be the expected behavior for them?
+    //       If acceptable, what will be the expected behavior for them?
     //       e.g.) L && R : equals to `parse('L R')`?
     //             L || R : if L is valid `parse(L)`, else `parse(R)`?
     var sep = inputs[1];
     var verL = inputs[0];
     var verR = inputs[2];
-    if (sep === '-' &&
-        !/^[><]/.test(verL) && exp.test(verL) &&
-        !/^[><]/.test(verR) && exp.test(verR)) {
-      var compare = (compareVersions(verL, verR) + '');
-      if (compare === '1') {
-        min = verR;
-        max = verL;
+    if (sep === '-' && exp.test(verL) && exp.test(verR)) {
+      // NOTE: If '>=1.2.3 - <=2.3.4' is acceptable (with COMPARATOR), remove comments.
+      if (/^[><]/.test(verL) || /^[><]/.test(verR)) {
+        // parsed = parseMinMax([verL, verR]);
+        // min = parsed.min;
+        // max = parsed.max;
       }
       else {
-        min = verL;
-        max = verR;
+        var compare = (compareVersions(verL, verR) + '');
+        if (compare === '1') {
+          min = verR;
+          max = verL;
+        }
+        else {
+          min = verL;
+          max = verR;
+        }
       }
     }
     else {
-      // with COMPARATOR, using `||` etc.
+      // using `||` etc.
       throw new Error(ERROR_MESSAGE);
     }
   }
   else {
     // inputs.length will be 1 or 2
-    for (var i = 0, l = inputs.length; i < l; i++) {
-      var str = exp.exec(inputs[i]);
-      if (str) {
-        switch (str[1]) {
-          case '>':
-            min = increment(str[2]);
-            break;
-          case '>=':
-            min = str[2];
-            break;
-          case '<':
-            max = decrement(str[2]);
-            break;
-          case '<=':
-            max = str[2];
-            break;
-          default:
-            // !COMPARATOR
-            if (i === 0) {
-              min = max = str[2];
-              if (l === 1) {
-                break;
-              }
-            }
-            else {
-              max = str[2];
-            }
-        }
-      }
-      else {
-        throw new Error(ERROR_MESSAGE);
-      }
-    }
+    parsed = parseMinMax(inputs);
+    min = parsed.min;
+    max = parsed.max;
   }
 
   return { min: min, max: max };
@@ -120,7 +95,7 @@ exports.decrement = decrement;
  * Takes a version string ('1.2.3') and returns a version string
  * that'll parse as greater than the input string by the smallest margin
  * possible ('1.2.3.1').
- * listed as number-A, string-B, number-C, string-D in 
+ * listed as number-A, string-B, number-C, string-D in
  * Mozilla's Toolkit Format.
  * https://developer.mozilla.org/en-US/docs/Toolkit_version_format
  *
@@ -128,9 +103,8 @@ exports.decrement = decrement;
  * @return {String}
  */
 function increment (vString) {
-  var VERSION_PART_CAPTURE = '(-?[\\d]+)?([!-\\-\\/:-~]+)?(-?[\\d]+)?([!-\\-\\/:-~]+)?';
   var match = (new RegExp('\\.?' + VERSION_PART_CAPTURE + '\\.?$')).exec(vString);
-  var a = match[1];
+  var a = match[1];  // NOTE: not used, remove?
   var b = match[2];
   var c = match[3];
   var d = match[4];
@@ -149,3 +123,50 @@ function increment (vString) {
   return vString.substr(0, lastPos) + String.fromCharCode(lastChar.charCodeAt(0) + 1);
 }
 exports.increment = increment;
+
+/**
+ * Takes an array containing 1 or 2 version strings (['>=1,2,3', '<=2.3.4']).
+ * Parse each string and set min/max version from comparator.
+ *
+ * @param {Array} inputs
+ * @return {Object}
+ */
+function parseMinMax (inputs) {
+  var exp = new RegExp('^' + VERSION_STRING + '$');
+  var min, max;
+  for (var i = 0, l = inputs.length; i < l; i++) {
+    var str = exp.exec(inputs[i]);
+    if (str) {
+      switch (str[1]) {
+        case '>':
+          min = increment(str[2]);
+          break;
+        case '>=':
+          min = str[2];
+          break;
+        case '<':
+          max = decrement(str[2]);
+          break;
+        case '<=':
+          max = str[2];
+          break;
+        default:
+          // !COMPARATOR
+          if (i === 0) {
+            min = max = str[2];
+            if (l === 1) {
+              break;
+            }
+          }
+          else {
+            max = str[2];
+          }
+      }
+    }
+    else {
+      throw new Error(ERROR_MESSAGE);
+    }
+  }
+  return { min: min, max: max };
+}
+exports.parseMinMax = parseMinMax;
