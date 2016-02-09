@@ -18,16 +18,16 @@ exports.parse = function (input) {
   }
   input = input.trim();
 
-  var inputs = input.split(/\s+/);
-  if (!(new RegExp(VERSION_STRING)).test(input) ||
-      inputs.length < 1 || inputs.length > 3) {
-    throw new Error(ERROR_MESSAGE);
-  }
-
   // Handle the '*' case
   // NOTE: Maybe return { min: undefined, max: '*' } should be better?
   if (input === '*') {
     return { min: undefined, max: undefined };
+  }
+
+  var inputs = input.split(/\s+/);
+  if (!(new RegExp(VERSION_STRING)).test(input) ||
+      inputs.length < 1 || inputs.length > 3) {
+    throw new Error(ERROR_MESSAGE);
   }
 
   var min, max, parsed;
