@@ -48,7 +48,7 @@ exports.parse = function (input) {
     if (sep === '-' && exp.test(verL) && exp.test(verR)) {
       // NOTE: If '>=1.2.3 - <=2.3.4' is acceptable (with COMPARATOR), remove comments.
       if (/^[><]/.test(verL) || /^[><]/.test(verR)) {
-        // parsed = parseMinMax([verL, verR]);
+        // parsed = parseMinMax([verL, verR], exp);
         // min = parsed.min;
         // max = parsed.max;
       }
@@ -71,7 +71,7 @@ exports.parse = function (input) {
   }
   else {
     // inputs.length will be 1 or 2
-    parsed = parseMinMax(inputs);
+    parsed = parseMinMax(inputs, exp);
     min = parsed.min;
     max = parsed.max;
   }
@@ -129,10 +129,11 @@ exports.increment = increment;
  * Parse each string and set min/max version from comparator.
  *
  * @param {Array} inputs
+ * @param {RegExp} [exp]
  * @return {Object}
  */
-function parseMinMax (inputs) {
-  var exp = new RegExp('^' + VERSION_STRING + '$');
+function parseMinMax (inputs, exp) {
+  exp = exp || new RegExp('^' + VERSION_STRING + '$');
   var min, max;
   for (var i = 0, l = inputs.length; i < l; i++) {
     var str = exp.exec(inputs[i]);
