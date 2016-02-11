@@ -44,6 +44,7 @@ exports.parse = function (input) {
         max = parsed.max;
       }
       else {
+        // Handle ['2.3.4', '1.2.3'] case (verL > verR)
         if (compareVersions(verL, verR) > 0) {
           min = verR;
           max = verL;

@@ -38,7 +38,6 @@ describe('parse(version) single value', function () {
   testParse('<=1..', undefined, '1..');
   testParse('>1..', '1..1', undefined);
   testParse('<1..', undefined, '1..-1');
-
 });
 
 describe('parse(version) range', function () {
@@ -51,8 +50,14 @@ describe('parse(version) range', function () {
   testParse('<=2.3.4 >1.2.3', '1.2.3.1', '2.3.4');
   testParse('<2.3.4 >=1.2.3', '1.2.3', '2.3.4.-1');
   testParse('<2.3.4 >1.2.3', '1.2.3.1', '2.3.4.-1');
-  
+
   testParse('1.2.3pre1 - 2.3.4', '1.2.3pre1', '2.3.4');
+
+  testParse('2.3.4 - 1.2.3', '1.2.3', '2.3.4');
+  testParse('- 1.2.3', undefined, '1.2.3');
+  testParse('1.2.3 -', '1.2.3', undefined);
+  testParse('- *', undefined, '*');
+  testParse('* -', undefined, '*');
 });
 
 describe('increment(version)', function () {
