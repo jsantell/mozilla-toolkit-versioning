@@ -165,13 +165,19 @@ function parseMinMax (input, exp) {
       switch (cmp) {
         case '>':
           ver = increment(ver);
-          if(!min || compareVersions(min, ver) > 0) {
+          if (!min || compareVersions(min, ver) > 0) {
             min = ver;
+          }
+          if (max && compareVersions(ver, max) > 0) {
+            max = undefined;
           }
           break;
         case '>=':
-          if(!min || compareVersions(min, ver) > 0) {
+          if (!min || compareVersions(min, ver) > 0) {
             min = ver;
+          }
+          if (max && compareVersions(ver, max) > 0) {
+            max = undefined;
           }
           break;
         case '<':
@@ -179,10 +185,16 @@ function parseMinMax (input, exp) {
           if (!max || compareVersions(ver, max) > 0) {
             max = ver;
           }
+          if (min && compareVersions(min, ver) > 0) {
+            min = undefined;
+          }
           break;
         case '<=':
           if (!max || compareVersions(ver, max) > 0) {
             max = ver;
+          }
+          if (min && compareVersions(min, ver) > 0) {
+            min = undefined;
           }
           break;
         default:

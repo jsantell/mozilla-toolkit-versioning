@@ -57,7 +57,7 @@ describe('parse(version) range', function () {
   testParse('2.3.4 - 1.2.3', '1.2.3', '2.3.4');
   testParse('1.2.3 - 1.2.*', '1.2.3', '1.2.*');
   testParse('1.2.* - 1.2.3', '1.2.3', '1.2.*');
-  testParse('<=1.2.3 - 2.3.4', undefined, '2.3.4');
+  testParse('<=1.2.3 - 2.3.4', undefined, '1.2.3');
   testParse('>=2.3.4 - 1.2.3', '2.3.4', undefined);
   testParse('1.2.3 - >=2.3.4', '2.3.4', undefined);
 
