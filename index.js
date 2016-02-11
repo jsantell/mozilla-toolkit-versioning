@@ -191,12 +191,18 @@ function parseMinMax (input, exp) {
             max = ver;            
           }
           else {
-            if (i === 0) {
+            if (l === 1) {
               min = max = ver;
             }
             else {
               if (!max || compareVersions(ver, max) > 0) {
                 max = ver;
+              }
+              if (!min || compareVersions(min, ver) > 0) {
+                min = ver;
+                if (max && compareVersions(ver, max) > 0) {
+                  max = undefined;
+                }
               }
             }
           }
