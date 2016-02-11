@@ -54,6 +54,7 @@ describe('parse(version) range', function () {
   testParse('1.2.3pre1 - 2.3.4', '1.2.3pre1', '2.3.4');
 
   testParse('2.3.4 - 1.2.3', '1.2.3', '2.3.4');
+  testParse('1.2.3 - 1.2.*', '1.2.3', '1.2.*');
   testParse('- 1.2.3', undefined, '1.2.3');
   testParse('1.2.3 -', '1.2.3', undefined);
   testParse('- *', undefined, '*');
