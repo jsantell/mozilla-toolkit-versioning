@@ -20,6 +20,7 @@ describe('parse(version) single value', function () {
   testParse('', undefined, undefined);
   testParse('*', undefined, '*');
   testParse('-', undefined, undefined);
+  testParse(' 1.2.3 ', '1.2.3', '1.2.3');
 
   testParse('1.2.-1', '1.2.-1', '1.2.-1');
   testParse('>=1.2.-1', '1.2.-1', undefined);
