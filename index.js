@@ -1,60 +1,50 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+'use strict';
 var compareVersions = require('mozilla-version-comparator');
 
-// Expression to match Mozilla's Toolkit Format.
+// Expressions to match Mozilla's Toolkit Format.
 // https://developer.mozilla.org/en-US/docs/Toolkit_version_format
 var VERSION_PART = '(?:(?:-?[\\d]+)?(?:[!-\\-\\/:-~]+)?){2}';
 var VERSION_PART_CAPTURE = '(-?[\\d]+)?([!-\\-\\/:-~]+)?(-?[\\d]+)?([!-\\-\\/:-~]+)?';
 var VERSION_FORMAT = '(?:' + VERSION_PART + ')?(?:\.(?:' + VERSION_PART + ')?)*';
 var COMPARATOR = '[><]=?';
 var VERSION_STRING = '(' + COMPARATOR + ')?(' + VERSION_FORMAT + ')';
+var INPUT_SYNTAX = VERSION_STRING + '(?:(?:\\s+-)?\\s+' + VERSION_STRING + ')?';
 var ERROR_MESSAGE = '`parse` argument must be a populated string.';
 
 exports.parse = function (input) {
-  if (!input || !(typeof input === 'string' || input instanceof String)) {
+  if (!input) {
+    return exceptionalInput('');
+  }
+  if (!(typeof input === 'string' || input instanceof String) ||
+      !(new RegExp('^\\s*' + INPUT_SYNTAX + '\\s*$')).test(input)) {
     throw new Error(ERROR_MESSAGE);
   }
   input = input.trim();
-
-  // Handle the '*' case
-  // NOTE: Maybe return { min: undefined, max: '*' } should be better?
-  if (input === '*') {
-    return { min: undefined, max: undefined };
+  if (/^(?:[\*\-])?$/.test(input)) {
+    return exceptionalInput(input);
   }
-
-  var inputs = input.split(/\s+/);
-  if (!(new RegExp(VERSION_STRING)).test(input) ||
-      inputs.length < 1 || inputs.length > 3) {
+  input = input.split(/\s+/);
+  if (input.length < 1 || input.length > 3) {
     throw new Error(ERROR_MESSAGE);
   }
 
-  var min, max, parsed;
+  var min, max, verL, verR, parsed;
   var exp = new RegExp('^' + VERSION_STRING + '$');
-
   // 1.2.3 - 2.3.4
-  if (inputs.length === 3) {
-    // NOTE: What is expected in '2.3.4 - 1.2.3' case? (L > R)
-    //       `if (L > R) then (min = R, max = L)`? (current behavior in this patch)
-    // NOTE: Is '>=1.2.3 - <=2.3.4' acceptable? (with COMPARATOR)
-    // NOTE: Is '>=1.2.3 || <=2.3.4' acceptable? (with `||`, maybe `&&` too)
-    //       If acceptable, what will be the expected behavior for them?
-    //       e.g.) L && R : equals to `parse('L R')`?
-    //             L || R : if L is valid `parse(L)`, else `parse(R)`?
-    var sep = inputs[1];
-    var verL = inputs[0];
-    var verR = inputs[2];
-    if (sep === '-' && exp.test(verL) && exp.test(verR)) {
-      // NOTE: If '>=1.2.3 - <=2.3.4' is acceptable (with COMPARATOR), remove comments.
+  if (input.length === 3) {
+    verL = input[0];
+    verR = input[2];
+    if (input[1] === '-' && exp.test(verL) && exp.test(verR)) {
       if (/^[><]/.test(verL) || /^[><]/.test(verR)) {
-        // parsed = parseMinMax([verL, verR], exp);
-        // min = parsed.min;
-        // max = parsed.max;
+        parsed = parseMinMax([verL, verR], exp);
+        min = parsed.min;
+        max = parsed.max;
       }
       else {
-        var compare = (compareVersions(verL, verR) + '');
-        if (compare === '1') {
+        if (compareVersions(verL, verR) > 0) {
           min = verR;
           max = verL;
         }
@@ -65,17 +55,51 @@ exports.parse = function (input) {
       }
     }
     else {
-      // using `||` etc.
       throw new Error(ERROR_MESSAGE);
     }
   }
   else {
-    // inputs.length will be 1 or 2
-    parsed = parseMinMax(inputs, exp);
+    if (input.length === 2) {
+      verL = input[0];
+      verR = input[1];
+      // Handle ['-', '1.2.3'] case
+      if (verL === '-') {
+        switch (verR) {
+          case '*': // ['-', '*']
+            return exceptionalInput(verR);
+          case '-': // ['-', '-']
+            throw new Error(ERROR_MESSAGE);
+          default:
+            if(!/^[><]/.test(verR) {
+              return { min: undefined, max: verR };
+            }
+            input = [verR];
+        }
+      }
+      // Handle ['1.2.3', '-'] case
+      if (verR === '-') {
+        switch (verL) {
+          case '*': // ['*', '-']
+            return exceptionalInput(verL);
+          case '-': // ['-', '-']
+            throw new Error(ERROR_MESSAGE);
+          default:
+            if(!/^[><]/.test(verL) {
+              return { min: verL, max: undefined };
+            }
+            input = [verL];
+        }
+      }
+      // Handle ['2.3.4', '1.2.3'] case (verL > verR)
+      if (!/^[><]/.test(verL) && !/^[><]/.test(verR) &&
+          compareVersions(verL, verR) > 0) {
+        input = [verR, verL];
+      }
+    }
+    parsed = parseMinMax(input, exp);
     min = parsed.min;
     max = parsed.max;
   }
-
   return { min: min, max: max };
 };
 
@@ -104,7 +128,6 @@ exports.decrement = decrement;
  */
 function increment (vString) {
   var match = (new RegExp('\\.?' + VERSION_PART_CAPTURE + '\\.?$')).exec(vString);
-  var a = match[1];  // NOTE: not used, remove?
   var b = match[2];
   var c = match[3];
   var d = match[4];
@@ -128,39 +151,53 @@ exports.increment = increment;
  * Takes an array containing 1 or 2 version strings (['>=1,2,3', '<=2.3.4']).
  * Parse each string and set min/max version from comparator.
  *
- * @param {Array} inputs
- * @param {RegExp} [exp]
+ * @param {Array} input
+ * @param {RegExp} exp - RegExp('^' + VERSION_STRING + '$')
  * @return {Object}
  */
-function parseMinMax (inputs, exp) {
-  exp = exp || new RegExp('^' + VERSION_STRING + '$');
-  var min, max;
-  for (var i = 0, l = inputs.length; i < l; i++) {
-    var str = exp.exec(inputs[i]);
-    if (str) {
-      switch (str[1]) {
+function parseMinMax (input, exp) {
+  var min, max, str, cmp, ver;
+  for (var i = 0, l = input.length; i < l; i++) {
+    if (str = exp.exec(input[i])) {
+      cmp = str[1];
+      ver = str[2];
+      switch (cmp) {
         case '>':
-          min = increment(str[2]);
+          ver = increment(ver);
+          if(!min || compareVersions(min, ver) > 0) {
+            min = ver;
+          }
           break;
         case '>=':
-          min = str[2];
+          if(!min || compareVersions(min, ver) > 0) {
+            min = ver;
+          }
           break;
         case '<':
-          max = decrement(str[2]);
+          ver = decrement(ver);
+          if (!max || compareVersions(ver, max) > 0) {
+            max = ver;
+          }
           break;
         case '<=':
-          max = str[2];
+          if (!max || compareVersions(ver, max) > 0) {
+            max = ver;
+          }
           break;
         default:
           // !COMPARATOR
-          if (i === 0) {
-            min = max = str[2];
-            if (l === 1) {
-              break;
-            }
+          if (ver === '*') {
+            max = ver;            
           }
           else {
-            max = str[2];
+            if (i === 0) {
+              min = max = ver;
+            }
+            else {
+              if (!max || compareVersions(ver, max) > 0) {
+                max = ver;
+              }
+            }
           }
       }
     }
@@ -170,4 +207,13 @@ function parseMinMax (inputs, exp) {
   }
   return { min: min, max: max };
 }
-exports.parseMinMax = parseMinMax;
+
+/**
+ * Handle exceptional input cases ('*', '-', '')
+ *
+ * @param {string} str
+ * @return {Object}
+ */
+function exceptionalInput(str) {
+  return { min: undefined, max: str === '*' ? '*' : undefined };
+}

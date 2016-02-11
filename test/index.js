@@ -17,6 +17,25 @@ describe('parse(version) single value', function () {
   testParse('>1.2.3', '1.2.3.1', undefined);
   testParse('<1.2.3', undefined, '1.2.3.-1');
   testParse('*', undefined, undefined);
+
+  testParse('1.2.-1', '1.2.-1', '1.2.-1');
+  testParse('>=1.2.-1', '1.2.-1', undefined);
+  testParse('<=1.2.-1', undefined, '1.2.-1');
+  testParse('>1.2.-1', '1.2.-1.1', undefined);
+  testParse('<1.2.-1', undefined, '1.2.-1.-1');
+
+  testParse('1.2.*', '1.2.*', '1.2.*');
+  testParse('>=1.2.*', '1.2.*', undefined);
+  testParse('<=1.2.*', undefined, '1.2.*');
+  testParse('>1.2.*', '1.2.*.1', undefined);
+  testParse('<1.2.*', undefined, '1.2.*.-1');
+
+  testParse('1..', '1..', '1..');
+  testParse('>=1..', '1..', undefined);
+  testParse('<=1..', undefined, '1..');
+  testParse('>1..', '1..1', undefined);
+  testParse('<1..', undefined, '1..-1');
+
 });
 
 describe('parse(version) range', function () {
@@ -41,6 +60,10 @@ describe('increment(version)', function () {
   testInc('1.2', '1.2.1');
   testInc('1.2pre1a', '1.2pre1b');
   testInc('1.2pre1pre', '1.2pre1prf');
+
+  testInc('1.2.-1', '1.2.-1.1');
+  testInc('1.2.*', '1.2.*.1');
+  testInc('1..', '1..1');
 });
 
 function testParse (string, min, max) {
