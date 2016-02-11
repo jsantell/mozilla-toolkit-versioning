@@ -159,7 +159,8 @@ exports.increment = increment;
 function parseMinMax (input, exp) {
   var min, max, str, cmp, ver;
   for (var i = 0, l = input.length; i < l; i++) {
-    if (str = exp.exec(input[i])) {
+    str = exp.exec(input[i]);
+    if (str) {
       cmp = str[1];
       ver = str[2];
       switch (cmp) {
