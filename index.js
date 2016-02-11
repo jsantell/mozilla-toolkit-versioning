@@ -209,6 +209,9 @@ function parseMinMax (input, exp) {
             else {
               if (!max || compareVersions(ver, max) > 0) {
                 max = ver;
+                if (min && compareVersions(min, ver) > 0) {
+                  min = undefined;
+                }
               }
               if (!min || compareVersions(min, ver) > 0) {
                 min = ver;
