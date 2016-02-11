@@ -176,6 +176,9 @@ function parseMinMax (input, exp) {
           break;
         case '<':
           ver = decrement(ver);
+          if (!max || compareVersions(ver, max) > 0) {
+            max = ver;
+          }
           break;
         case '<=':
           if (!max || compareVersions(ver, max) > 0) {
@@ -188,7 +191,7 @@ function parseMinMax (input, exp) {
             max = ver;            
           }
           else {
-            if (i === 1) {
+            if (i === 0) {
               min = max = ver;
             }
             else {
