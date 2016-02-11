@@ -168,33 +168,18 @@ function parseMinMax (input, exp) {
           if (!min || compareVersions(min, ver) > 0) {
             min = ver;
           }
-          if (max && compareVersions(ver, max) > 0) {
-            max = undefined;
-          }
           break;
         case '>=':
           if (!min || compareVersions(min, ver) > 0) {
             min = ver;
           }
-          if (max && compareVersions(ver, max) > 0) {
-            max = undefined;
-          }
           break;
         case '<':
           ver = decrement(ver);
-          if (!max || compareVersions(ver, max) > 0) {
-            max = ver;
-          }
-          if (min && compareVersions(min, ver) > 0) {
-            min = undefined;
-          }
           break;
         case '<=':
           if (!max || compareVersions(ver, max) > 0) {
             max = ver;
-          }
-          if (min && compareVersions(min, ver) > 0) {
-            min = undefined;
           }
           break;
         default:
@@ -203,21 +188,12 @@ function parseMinMax (input, exp) {
             max = ver;            
           }
           else {
-            if (l === 1) {
+            if (i === 1) {
               min = max = ver;
             }
             else {
               if (!max || compareVersions(ver, max) > 0) {
                 max = ver;
-                if (min && compareVersions(min, ver) > 0) {
-                  min = undefined;
-                }
-              }
-              if (!min || compareVersions(min, ver) > 0) {
-                min = ver;
-                if (max && compareVersions(ver, max) > 0) {
-                  max = undefined;
-                }
               }
             }
           }
@@ -226,6 +202,9 @@ function parseMinMax (input, exp) {
     else {
       throw new Error(ERROR_MESSAGE);
     }
+  }
+  if (min && max && compareVersions(min, max) > 0) {
+    throw new Error(ERROR_MESSAGE);
   }
   return { min: min, max: max };
 }
