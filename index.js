@@ -70,7 +70,7 @@ exports.parse = function (input) {
           case '-': // ['-', '-']
             throw new Error(ERROR_MESSAGE);
           default:
-            if(!/^[><]/.test(verR) {
+            if(!/^[><]/.test(verR)) {
               return { min: undefined, max: verR };
             }
             input = [verR];
@@ -84,7 +84,7 @@ exports.parse = function (input) {
           case '-': // ['-', '-']
             throw new Error(ERROR_MESSAGE);
           default:
-            if(!/^[><]/.test(verL) {
+            if(!/^[><]/.test(verL)) {
               return { min: verL, max: undefined };
             }
             input = [verL];
