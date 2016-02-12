@@ -189,7 +189,7 @@ function parseMinMax (input, exp) {
         default:
           // !COMPARATOR
           if (ver === '*') {
-            max = ver;            
+            max = ver;
           }
           else {
             if (i === 0) {
