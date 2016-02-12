@@ -25,7 +25,7 @@ describe('parse(version) single value', function () {
   testParse('1.2.-1', '1.2.-1', '1.2.-1');
   testParse('>=1.2.-1', '1.2.-1', undefined);
   testParse('<=1.2.-1', undefined, '1.2.-1');
-  testParse('>1.2.-1', '1.2.-1.1', undefined);
+  testParse('>1.2.-1', '1.2.0', undefined);
   testParse('<1.2.-1', undefined, '1.2.-1.-1');
 
   testParse('1.2.*', '1.2.*', '1.2.*');
@@ -81,7 +81,7 @@ describe('increment(version)', function () {
   testInc('1.2pre1a', '1.2pre1b');
   testInc('1.2pre1pre', '1.2pre1prf');
 
-  testInc('1.2.-1', '1.2.-1.1');
+  testInc('1.2.-1', '1.2.0');
   testInc('1.2.*', '1.2.*.1');
   testInc('1..', '1..1');
 });

@@ -38,21 +38,20 @@ exports.parse = function (input) {
     verL = input[0];
     verR = input[2];
     if (input[1] === '-' && exp.test(verL) && exp.test(verR)) {
+      // with Comparator
       if (/^[><]/.test(verL) || /^[><]/.test(verR)) {
         parsed = parseMinMax([verL, verR], exp);
         min = parsed.min;
         max = parsed.max;
       }
+      // Handle ['2.3.4', '1.2.3'] case (verL > verR)
+      else if (compareVersions(verL, verR) > 0) {
+        min = verR;
+        max = verL;
+      }
       else {
-        // Handle ['2.3.4', '1.2.3'] case (verL > verR)
-        if (compareVersions(verL, verR) > 0) {
-          min = verR;
-          max = verL;
-        }
-        else {
-          min = verL;
-          max = verR;
-        }
+        min = verL;
+        max = verR;
       }
     }
     else {
@@ -129,12 +128,16 @@ exports.decrement = decrement;
  */
 function increment (vString) {
   var match = (new RegExp('\\.?' + VERSION_PART_CAPTURE + '\\.?$')).exec(vString);
+  var a = match[1];
   var b = match[2];
   var c = match[3];
   var d = match[4];
   var lastPos = vString.length - 1;
   var lastChar = vString.charAt(lastPos);
 
+  if (a === "-1" && !b && !c && !d && lastChar === '1') {
+    return vString.substr(0, lastPos - 1) + '0';
+  }
   if (!b) {
     return vString + (lastChar === '.' ? '' : '.') + '1';
   }
@@ -191,15 +194,11 @@ function parseMinMax (input, exp) {
           if (ver === '*') {
             max = ver;
           }
-          else {
-            if (i === 0) {
-              min = max = ver;
-            }
-            else {
-              if (!max || compareVersions(ver, max) > 0) {
-                max = ver;
-              }
-            }
+          else if (i === 0) {
+            min = max = ver;
+          }
+          else if (!max || compareVersions(ver, max) > 0) {
+            max = ver;
           }
       }
     }
