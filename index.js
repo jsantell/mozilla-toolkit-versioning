@@ -38,21 +38,20 @@ exports.parse = function (input) {
     verL = input[0];
     verR = input[2];
     if (input[1] === '-' && exp.test(verL) && exp.test(verR)) {
+      // with Comparator
       if (/^[><]/.test(verL) || /^[><]/.test(verR)) {
         parsed = parseMinMax([verL, verR], exp);
         min = parsed.min;
         max = parsed.max;
       }
+      // Handle ['2.3.4', '1.2.3'] case (verL > verR)
+      else if (compareVersions(verL, verR) > 0) {
+        min = verR;
+        max = verL;
+      }
       else {
-        // Handle ['2.3.4', '1.2.3'] case (verL > verR)
-        if (compareVersions(verL, verR) > 0) {
-          min = verR;
-          max = verL;
-        }
-        else {
-          min = verL;
-          max = verR;
-        }
+        min = verL;
+        max = verR;
       }
     }
     else {
@@ -195,15 +194,11 @@ function parseMinMax (input, exp) {
           if (ver === '*') {
             max = ver;
           }
-          else {
-            if (i === 0) {
-              min = max = ver;
-            }
-            else {
-              if (!max || compareVersions(ver, max) > 0) {
-                max = ver;
-              }
-            }
+          else if (i === 0) {
+            min = max = ver;
+          }
+          else if (!max || compareVersions(ver, max) > 0) {
+            max = ver;
           }
       }
     }
