@@ -129,12 +129,16 @@ exports.decrement = decrement;
  */
 function increment (vString) {
   var match = (new RegExp('\\.?' + VERSION_PART_CAPTURE + '\\.?$')).exec(vString);
+  var a = match[1];
   var b = match[2];
   var c = match[3];
   var d = match[4];
   var lastPos = vString.length - 1;
   var lastChar = vString.charAt(lastPos);
 
+  if (a === "-1" && !b && !c && !d && lastChar === '1') {
+    return vString.substr(0, lastPos - 1) + '0';
+  }
   if (!b) {
     return vString + (lastChar === '.' ? '' : '.') + '1';
   }
