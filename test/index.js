@@ -81,7 +81,7 @@ describe('increment(version)', function () {
   testInc('1.2pre1a', '1.2pre1b');
   testInc('1.2pre1pre', '1.2pre1prf');
 
-  testInc('1.2.-1', '1.2.-1.1');
+  testInc('1.2.-1', '1.2.0');
   testInc('1.2.*', '1.2.*.1');
   testInc('1..', '1..1');
 });
