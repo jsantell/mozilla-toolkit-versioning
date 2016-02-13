@@ -202,9 +202,8 @@ function parseMinMax (input, exp) {
     if (str) {
       cmp = str[1];
       ver = str[2];
-      // Handle legacy '1.0+'
       pre = /^(\d+)\+$/.exec(ver);
-      if (pre) {
+      if ((!cmp || /^[><]=$/.test(cmp)) && pre) {
         ver = (pre[1] * 1 + 1) + 'pre';
       }
       switch (cmp) {
