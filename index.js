@@ -160,7 +160,7 @@ function increment (vString) {
 
   // increment '1.-1'
   if (a && /^-\d+$/.test(a) && !b) {
-    lastPos -= (a.length + (lastChar === '.' ? 1 : 0));
+    lastPos -= (a.length + (lastChar === '.' ? 0 : -1));
     return vString.substr(0, lastPos) + ((a * 1 + 1) + '');
   }
   if (!b) {
@@ -196,12 +196,17 @@ exports.increment = increment;
  * @return {Object}
  */
 function parseMinMax (input, exp) {
-  var min, max, str, cmp, ver;
+  var min, max, str, cmp, ver, pre;
   for (var i = 0, l = input.length; i < l; i++) {
     str = exp.exec(input[i]);
     if (str) {
       cmp = str[1];
       ver = str[2];
+      // Handle legacy '1.0+'
+      pre = /^(\d+)\+$/.exec(ver);
+      if (pre) {
+        ver = (pre[1] * 1 + 1) + 'pre';
+      }
       switch (cmp) {
         case '>':
           ver = increment(ver);
@@ -210,7 +215,6 @@ function parseMinMax (input, exp) {
           }
           break;
         case '>=':
-          ver = ver.replace(/\+$/, 'pre');
           if (!min || compareVersions(min, ver) > 0) {
             min = ver;
           }
@@ -222,7 +226,6 @@ function parseMinMax (input, exp) {
           }
           break;
         case '<=':
-          ver = ver.replace(/\+$/, 'pre');
           if (!max || compareVersions(ver, max) > 0) {
             max = ver;
           }
