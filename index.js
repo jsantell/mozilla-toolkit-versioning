@@ -126,7 +126,7 @@ function decrement (vString) {
   }
   // decrement legacy '1.0+'
   if (a && b && /^\+$/.test(b) && !c && lastChar !== '.') {
-    return vString.substr(0, lastPos - 1);
+    return vString.substr(0, lastPos);
   }
   // decrement '1.1a-1'
   if (b && /^.*-$/.test(b) && c && !d) {
@@ -168,7 +168,7 @@ function increment (vString) {
   }
   // increment legacy '1.0+'
   if (/^\+$/.test(b) && !c && lastChar !== '.') {
-    lastPos -= (a.length + 1);
+    lastPos -= a.length;
     return vString.substr(0, lastPos) + ((a * 1 + 1) + 'pre');
   }
   if (!c) {
