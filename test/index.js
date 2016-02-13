@@ -85,6 +85,7 @@ describe('parse(version) range', function () {
   testParse('1.0.a-2 1.0.a-1', '1.0.a-2', '1.0.a-2');
   testParse('<=1.0.a-1 >=1.0.a-2', '1.0.a-2', '1.0.a-1');
   testParse('>=1.0.a-2 <=1.0.a-1', '1.0.a-2', '1.0.a-1');
+  testParse('1.0.a-1 - 1.0.a-2', '1.0.a-2', '1.0.a-1');
 
 });
 
