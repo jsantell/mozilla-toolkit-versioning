@@ -202,9 +202,9 @@ function parseMinMax (input, exp) {
     if (str) {
       cmp = str[1];
       ver = str[2];
-      pre = /^([\d]+)\+$/.exec(ver);
+      pre = /^((?:\d+\.)*)(\d+)\+$/.exec(ver);
       if ((!cmp || /^[><]=$/.test(cmp)) && pre) {
-        ver = (pre[1] * 1 + 1) + 'pre';
+        ver = pre[1] + (pre[2] * 1 + 1) + 'pre';
       }
       switch (cmp) {
         case '>':
