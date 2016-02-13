@@ -90,7 +90,7 @@ describe('increment(version)', function () {
   testInc('1.2.-1', '1.2.0');
   testInc('1.2.*', '1.2.*.1');
   testInc('1..', '1..1');
-  testInc('1.0+', '1.1pre');
+  testInc('1.0+', '1.1');
 });
 
 function testParse (string, min, max) {

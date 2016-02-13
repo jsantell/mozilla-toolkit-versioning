@@ -169,7 +169,7 @@ function increment (vString) {
   // increment legacy '1.0+'
   if (/^\+$/.test(b) && !c && lastChar !== '.') {
     lastPos -= a.length;
-    return vString.substr(0, lastPos) + ((a * 1 + 1) + 'pre');
+    return vString.substr(0, lastPos) + ((a * 1 + 1) + '');
   }
   if (!c) {
     return vString + (lastChar === '*' ? '.' : '') + '1';
