@@ -44,10 +44,15 @@ exports.parse = function (input) {
         min = parsed.min;
         max = parsed.max;
       }
-      // Handle ['2.3.4', '1.2.3'] case (verL > verR)
+      // Handle ['2.3.4', '-', '1.2.3'] case (verL > verR)
       else if (compareVersions(verL, verR) > 0) {
         min = verR;
         max = verL;
+      }
+      // Handle ['1.0.a-1', '-', '1.0.a-2'] case (not comparable)
+      else if (compareVersions(verL, verR) < 0 &&
+               compareVersions(verR, verL) < 0) {
+        throw new Error(ERROR_MESSAGE);
       }
       else {
         min = verL;
@@ -130,9 +135,7 @@ function decrement (vString) {
   }
   // decrement '1.1a-1'
   if (b && /^.*-$/.test(b) && c && !d) {
-    // pending
-    // should it be treated as string-b === 'a-', number-c === '1',
-    // or string-b === 'a', number-c === '-1'
+    throw new Error(ERROR_MESSAGE);
   }
   return vString + (lastChar === '.' ? '' : '.') + '-1';
 }
@@ -176,9 +179,7 @@ function increment (vString) {
   }
   // increment '1.1a-1'
   if (/^.*-$/.test(b) && !d) {
-    // pending
-    // should it be treated as string-b === 'a-', number-c === '1',
-    // or string-b === 'a', number-c === '-1'
+    throw new Error(ERROR_MESSAGE);
   }
   if (!d) {
     return vString.substr(0, lastPos) + (++lastChar);
@@ -246,7 +247,9 @@ function parseMinMax (input, exp) {
       throw new Error(ERROR_MESSAGE);
     }
   }
-  if (min && max && compareVersions(min, max) > 0) {
+  if (min && max &&
+      (compareVersions(min, max) > 0 ||
+       (compareVersions(min, max) < 0 && compareVersions(max, min) < 0))) {
     throw new Error(ERROR_MESSAGE);
   }
   return { min: min, max: max };
