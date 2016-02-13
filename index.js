@@ -111,7 +111,30 @@ exports.parse = function (input) {
  * @return {String}
  */
 function decrement (vString) {
-  return vString + (vString.charAt(vString.length - 1) === '.' ? '' : '.') + '-1';
+  var match = (new RegExp('\\.?' + VERSION_PART_CAPTURE + '\\.?$')).exec(vString);
+  var a = match[1];
+  var b = match[2];
+  var c = match[3];
+  var d = match[4];
+  var lastPos = vString.length - 1;
+  var lastChar = vString.charAt(lastPos);
+
+  // decrement '1.-1'
+  if (a && /^-\d+$/.test(a) && !b) {
+    lastPos -= (a.length + (lastChar === '.' ? 1 : 0));
+    return vString.substr(0, lastPos) + ((a * 1 - 1) + '');
+  }
+  // decrement legacy '1.0+'
+  if (a && b && /^\+$/.test(b) && !c && lastChar !== '.') {
+    return vString.substr(0, lastPos - 1);
+  }
+  // decrement '1.1a-1'
+  if (b && /^.*-$/.test(b) && c && !d) {
+    // pending
+    // should it be treated as string-b === 'a-', number-c === '1',
+    // or string-b === 'a', number-c === '-1'
+  }
+  return vString + (lastChar === '.' ? '' : '.') + '-1';
 }
 exports.decrement = decrement;
 
@@ -135,14 +158,27 @@ function increment (vString) {
   var lastPos = vString.length - 1;
   var lastChar = vString.charAt(lastPos);
 
-  if (a === "-1" && !b && !c && !d && lastChar === '1') {
-    return vString.substr(0, lastPos - 1) + '0';
+  // increment '1.-1'
+  if (a && /^-\d+$/.test(a) && !b) {
+    lastPos -= (a.length + (lastChar === '.' ? 1 : 0));
+    return vString.substr(0, lastPos) + ((a * 1 + 1) + '');
   }
   if (!b) {
     return vString + (lastChar === '.' ? '' : '.') + '1';
   }
+  // increment legacy '1.0+'
+  if (/^\+$/.test(b) && !c && lastChar !== '.') {
+    lastPos -= (a.length + 1);
+    return vString.substr(0, lastPos) + ((a * 1 + 1) + 'pre');
+  }
   if (!c) {
     return vString + (lastChar === '*' ? '.' : '') + '1';
+  }
+  // increment '1.1a-1'
+  if (/^.*-$/.test(b) && !d) {
+    // pending
+    // should it be treated as string-b === 'a-', number-c === '1',
+    // or string-b === 'a', number-c === '-1'
   }
   if (!d) {
     return vString.substr(0, lastPos) + (++lastChar);
