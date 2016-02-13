@@ -121,7 +121,7 @@ function decrement (vString) {
 
   // decrement '1.-1'
   if (a && /^-\d+$/.test(a) && !b) {
-    lastPos -= (a.length + (lastChar === '.' ? 1 : 0));
+    lastPos -= (a.length + (lastChar === '.' ? 0 : -1));
     return vString.substr(0, lastPos) + ((a * 1 - 1) + '');
   }
   // decrement legacy '1.0+'
@@ -210,6 +210,7 @@ function parseMinMax (input, exp) {
           }
           break;
         case '>=':
+          ver = ver.replace(/\+$/, 'pre');
           if (!min || compareVersions(min, ver) > 0) {
             min = ver;
           }
@@ -221,6 +222,7 @@ function parseMinMax (input, exp) {
           }
           break;
         case '<=':
+          ver = ver.replace(/\+$/, 'pre');
           if (!max || compareVersions(ver, max) > 0) {
             max = ver;
           }
