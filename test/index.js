@@ -76,6 +76,13 @@ describe('parse(version) range', function () {
   testParse('- <1.2.3', undefined, '1.2.3.-1');
   testParse('- *', undefined, '*');
   testParse('* -', undefined, '*');
+
+  /* edge cases */
+  testParse('1.0.-1 1.0pre10', '1.0pre10', '1.0.-1');
+  testParse('1.0.-1 1.0.-2', '1.0.-2', '1.0.-2');
+  testParse('1.0.-2 1.0pre10', '1.0.-2', '1.0pre10');
+  testParse('1.0.a-1 1.0.a-2', '1.0.a-2', '1.0.a-1');
+
 });
 
 describe('increment(version)', function () {
