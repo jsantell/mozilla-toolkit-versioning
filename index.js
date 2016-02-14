@@ -44,10 +44,15 @@ exports.parse = function (input) {
         min = parsed.min;
         max = parsed.max;
       }
-      // Handle ['2.3.4', '1.2.3'] case (verL > verR)
+      // Handle ['2.3.4', '-', '1.2.3'] case (verL > verR)
       else if (compareVersions(verL, verR) > 0) {
         min = verR;
         max = verL;
+      }
+      // Handle ['1.0.a-1', '-', '1.0.a-2'] case (not comparable)
+      else if (compareVersions(verL, verR) < 0 &&
+               compareVersions(verR, verL) < 0) {
+        throw new Error(ERROR_MESSAGE);
       }
       else {
         min = verL;
@@ -111,7 +116,28 @@ exports.parse = function (input) {
  * @return {String}
  */
 function decrement (vString) {
-  return vString + (vString.charAt(vString.length - 1) === '.' ? '' : '.') + '-1';
+  var match = (new RegExp('\\.?' + VERSION_PART_CAPTURE + '\\.?$')).exec(vString);
+  var a = match[1];
+  var b = match[2];
+  var c = match[3];
+  var d = match[4];
+  var lastPos = vString.length - 1;
+  var lastChar = vString.charAt(lastPos);
+
+  // decrement '1.-1'
+  if (a && /^-\d+$/.test(a) && !b) {
+    lastPos -= (a.length + (lastChar === '.' ? 0 : -1));
+    return vString.substr(0, lastPos) + ((a * 1 - 1) + '');
+  }
+  // decrement legacy '1.0+'
+  if (a && b && /^\+$/.test(b) && !c && lastChar !== '.') {
+    return vString.substr(0, lastPos);
+  }
+  // decrement '1.1a-1'
+  if (b && /^.*-$/.test(b) && c && !d) {
+    throw new Error(ERROR_MESSAGE);
+  }
+  return vString + (lastChar === '.' ? '' : '.') + '-1';
 }
 exports.decrement = decrement;
 
@@ -135,14 +161,25 @@ function increment (vString) {
   var lastPos = vString.length - 1;
   var lastChar = vString.charAt(lastPos);
 
-  if (a === "-1" && !b && !c && !d && lastChar === '1') {
-    return vString.substr(0, lastPos - 1) + '0';
+  // increment '1.-1'
+  if (a && /^-\d+$/.test(a) && !b) {
+    lastPos -= (a.length + (lastChar === '.' ? 0 : -1));
+    return vString.substr(0, lastPos) + ((a * 1 + 1) + '');
   }
   if (!b) {
     return vString + (lastChar === '.' ? '' : '.') + '1';
   }
+  // increment legacy '1.0+'
+  if (/^\+$/.test(b) && !c && lastChar !== '.') {
+    lastPos -= a.length;
+    return vString.substr(0, lastPos) + ((a * 1 + 1) + '');
+  }
   if (!c) {
     return vString + (lastChar === '*' ? '.' : '') + '1';
+  }
+  // increment '1.1a-1'
+  if (/^.*-$/.test(b) && !d) {
+    throw new Error(ERROR_MESSAGE);
   }
   if (!d) {
     return vString.substr(0, lastPos) + (++lastChar);
@@ -160,12 +197,16 @@ exports.increment = increment;
  * @return {Object}
  */
 function parseMinMax (input, exp) {
-  var min, max, str, cmp, ver;
+  var min, max, str, cmp, ver, pre;
   for (var i = 0, l = input.length; i < l; i++) {
     str = exp.exec(input[i]);
     if (str) {
       cmp = str[1];
       ver = str[2];
+      pre = /^((?:\d+\.)*)(\d+)\+$/.exec(ver);
+      if ((!cmp || /^[><]=$/.test(cmp)) && pre) {
+        ver = (pre[1] ? pre[1] : '') + (pre[2] * 1 + 1) + 'pre';
+      }
       switch (cmp) {
         case '>':
           ver = increment(ver);
@@ -206,7 +247,9 @@ function parseMinMax (input, exp) {
       throw new Error(ERROR_MESSAGE);
     }
   }
-  if (min && max && compareVersions(min, max) > 0) {
+  if (min && max &&
+      (compareVersions(min, max) > 0 ||
+       (compareVersions(min, max) < 0 && compareVersions(max, min) < 0))) {
     throw new Error(ERROR_MESSAGE);
   }
   return { min: min, max: max };
