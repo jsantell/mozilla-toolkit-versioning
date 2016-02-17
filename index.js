@@ -127,7 +127,7 @@ function decrement (vString) {
   // decrement '1.-1'
   if (a && /^-\d+$/.test(a) && !b) {
     lastPos -= (a.length + (lastChar === '.' ? 0 : -1));
-    return vString.substr(0, lastPos) + ((a * 1 - 1) + '');
+    return vString.substr(0, lastPos) + (--a);
   }
   // decrement legacy '1.0+'
   if (a && b && /^\+$/.test(b) && !c && lastChar !== '.') {
@@ -164,7 +164,7 @@ function increment (vString) {
   // increment '1.-1'
   if (a && /^-\d+$/.test(a) && !b) {
     lastPos -= (a.length + (lastChar === '.' ? 0 : -1));
-    return vString.substr(0, lastPos) + ((a * 1 + 1) + '');
+    return vString.substr(0, lastPos) + (++a);
   }
   if (!b) {
     return vString + (lastChar === '.' ? '' : '.') + '1';
@@ -172,7 +172,7 @@ function increment (vString) {
   // increment legacy '1.0+'
   if (/^\+$/.test(b) && !c && lastChar !== '.') {
     lastPos -= a.length;
-    return vString.substr(0, lastPos) + ((a * 1 + 1) + '');
+    return vString.substr(0, lastPos) + (++a);
   }
   if (!c) {
     return vString + (lastChar === '*' ? '.' : '') + '1';
@@ -205,7 +205,7 @@ function parseMinMax (input, exp) {
       ver = str[2];
       pre = /^((?:\d+\.)*)(\d+)\+$/.exec(ver);
       if ((!cmp || /^[><]=$/.test(cmp)) && pre) {
-        ver = (pre[1] ? pre[1] : '') + (pre[2] * 1 + 1) + 'pre';
+        ver = (pre[1] ? pre[1] : '') + (++pre[2]) + 'pre';
       }
       switch (cmp) {
         case '>':
@@ -249,7 +249,7 @@ function parseMinMax (input, exp) {
   }
   if (min && max &&
       (compareVersions(min, max) > 0 ||
-       (compareVersions(min, max) < 0 && compareVersions(max, min) < 0))) {
+       compareVersions(min, max) < 0 && compareVersions(max, min) < 0)) {
     throw new Error(ERROR_MESSAGE);
   }
   return { min: min, max: max };
