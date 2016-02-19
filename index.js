@@ -197,50 +197,48 @@ exports.increment = increment;
  * @return {Object}
  */
 function parseMinMax (input, exp) {
-  var min, max, str, cmp, ver, pre;
+  var min, max, str, cmp, ver;
   for (var i = 0, l = input.length; i < l; i++) {
     str = exp.exec(input[i]);
     if (str) {
       cmp = str[1];
       ver = str[2];
-      pre = /^((?:\d+\.)*)(\d+)\+$/.exec(ver);
-      if ((!cmp || /^[><]=$/.test(cmp)) && pre) {
-        ver = (pre[1] ? pre[1] : '') + (++pre[2]) + 'pre';
-      }
-      switch (cmp) {
-        case '>':
-          ver = increment(ver);
-          if (!min || compareVersions(min, ver) > 0) {
-            min = ver;
-          }
-          break;
-        case '>=':
-          if (!min || compareVersions(min, ver) > 0) {
-            min = ver;
-          }
-          break;
-        case '<':
-          ver = decrement(ver);
-          if (!max || compareVersions(ver, max) > 0) {
-            max = ver;
-          }
-          break;
-        case '<=':
-          if (!max || compareVersions(ver, max) > 0) {
-            max = ver;
-          }
-          break;
-        default:
-          // !COMPARATOR
-          if (ver === '*') {
-            max = ver;
-          }
-          else if (i === 0) {
-            min = max = ver;
-          }
-          else if (!max || compareVersions(ver, max) > 0) {
-            max = ver;
-          }
+      if (ver) {
+        switch (cmp) {
+          case '>':
+            ver = increment(ver);
+            if (!min || compareVersions(min, ver) > 0) {
+              min = ver;
+            }
+            break;
+          case '>=':
+            if (!min || compareVersions(min, ver) > 0) {
+              min = ver;
+            }
+            break;
+          case '<':
+            ver = decrement(ver);
+            if (!max || compareVersions(ver, max) > 0) {
+              max = ver;
+            }
+            break;
+          case '<=':
+            if (!max || compareVersions(ver, max) > 0) {
+              max = ver;
+            }
+            break;
+          default:
+            // !COMPARATOR
+            if (ver === '*') {
+              max = ver;
+            }
+            else if (i === 0) {
+              min = max = ver;
+            }
+            else if (!max || compareVersions(ver, max) > 0) {
+              max = ver;
+            }
+        }
       }
     }
     else {

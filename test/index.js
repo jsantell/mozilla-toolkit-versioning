@@ -40,10 +40,10 @@ describe('parse(version) single value', function () {
   testParse('>1..', '1..1', undefined);
   testParse('<1..', undefined, '1..-1');
 
-  testParse('1.0+', '1.1pre', '1.1pre');
-  testParse('>=1.0+', '1.1pre', undefined);
+  testParse('1.0+', '1.0+', '1.0+');
+  testParse('>=1.0+', '1.0+', undefined);
   testParse('>1.0+', '1.1', undefined);
-  testParse('<=1.0+', undefined, '1.1pre');
+  testParse('<=1.0+', undefined, '1.0+');
   testParse('<1.0+', undefined, '1.0');
 });
 
