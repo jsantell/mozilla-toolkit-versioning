@@ -49,11 +49,6 @@ exports.parse = function (input) {
         min = verR;
         max = verL;
       }
-      // Handle ['1.0.a-1', '-', '1.0.a-2'] case (not comparable)
-      else if (compareVersions(verL, verR) < 0 &&
-               compareVersions(verR, verL) < 0) {
-        throw new Error(ERROR_MESSAGE);
-      }
       else {
         min = verL;
         max = verR;
@@ -105,6 +100,13 @@ exports.parse = function (input) {
     min = parsed.min;
     max = parsed.max;
   }
+  // Check min <= max
+  if (min && max) {
+    input = compareVersions(min, max);
+    if (input > 0 || input < 0 && compareVersions(max, min) < 0) {
+      throw new Error(ERROR_MESSAGE);
+    }
+  }
   return { min: min, max: max };
 };
 
@@ -126,7 +128,7 @@ function decrement (vString) {
 
   // decrement '1.-1'
   if (a && /^-\d+$/.test(a) && !b) {
-    lastPos -= (a.length + (lastChar === '.' ? 0 : -1));
+    lastPos -= (a.length - (lastChar === '.' ? 0 : 1));
     return vString.substr(0, lastPos) + (--a);
   }
   // decrement legacy '1.0+'
@@ -163,7 +165,7 @@ function increment (vString) {
 
   // increment '1.-1'
   if (a && /^-\d+$/.test(a) && !b) {
-    lastPos -= (a.length + (lastChar === '.' ? 0 : -1));
+    lastPos -= (a.length - (lastChar === '.' ? 0 : 1));
     return vString.substr(0, lastPos) + (++a);
   }
   if (!b) {
@@ -227,8 +229,7 @@ function parseMinMax (input, exp) {
               max = ver;
             }
             break;
-          default:
-            // !COMPARATOR
+          default: // !COMPARATOR
             if (ver === '*') {
               max = ver;
             }
@@ -244,11 +245,6 @@ function parseMinMax (input, exp) {
     else {
       throw new Error(ERROR_MESSAGE);
     }
-  }
-  if (min && max &&
-      (compareVersions(min, max) > 0 ||
-       compareVersions(min, max) < 0 && compareVersions(max, min) < 0)) {
-    throw new Error(ERROR_MESSAGE);
   }
   return { min: min, max: max };
 }
